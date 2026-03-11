@@ -693,7 +693,7 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" onchange="switchPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
@@ -829,7 +829,7 @@ function renderTickers() {
     const max = Math.max(...t.spark);
     const min = Math.min(...t.spark);
     const pts = t.spark.map((v, i) => `${(i/19)*60},${20-((v-min)/(max-min))*18}`).join(' ');
-    return `<div class="ticker-item" onclick="showPairDetails(this)">
+    return `<div class="ticker-item">
       <span class="ticker-sym">${t.sym}</span>
       <span class="ticker-price">${priceStr}</span>
       <span class="ticker-change ${cls}">${sign}${t.change}%</span>
@@ -840,13 +840,6 @@ function renderTickers() {
   }).join('');
 }
 renderTickers();
-
-// Simple click handler - just show alert with pair name (for demo)
-function showPairDetails(el) {
-  const sym = el.querySelector('.ticker-sym').textContent;
-  const price = el.querySelector('.ticker-price').textContent;
-  alert(sym + ' - ' + price);
-}
 
 // ═══════════════════════════════════════════
 // POSITIONS
@@ -1055,9 +1048,9 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Live updates - keep selected pair
+  // Simulate live updates
   setInterval(() => {
-    renderOrderBook(pairPrices[currentPair] + (Math.random() - 0.5) * 100);
+    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
     renderTrades();
   }, 3000);
 }
@@ -1067,18 +1060,6 @@ connectWebSocket();
 // REFRESH BUTTONS
 document.getElementById('fundingRefresh').addEventListener('click', renderFunding);
 document.getElementById('tradesRefresh').addEventListener('click', renderTrades);
-
-let currentPair = "BTCUSDT";
-const pairPrices = { "BTCUSDT": 70472, "ETHUSDT": 2070, "SOLUSDT": 87, "BNBUSDT": 580, "HOLOUSDT": 0.002 };
-
-// Global variables for pair switching
-let currentPair = "BTCUSDT";
-const pairPrices = { "BTCUSDT": 70472, "ETHUSDT": 2070, "SOLUSDT": 87, "BNBUSDT": 580, "HOLOUSDT": 0.002 };
-
-function switchPair(sym) { 
-  currentPair = sym; 
-  renderOrderBook(pairPrices[sym] || 70000); 
-}
 
 console.log('✅ Aster Pilot v2 Dashboard loaded');
 </script>

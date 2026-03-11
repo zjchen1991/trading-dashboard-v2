@@ -1055,12 +1055,6 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Track selected pair
-  let currentPair = 'BTCUSDT';
-  const pairPrices = { 'BTCUSDT': 70472, 'ETHUSDT': 2070, 'SOLUSDT': 87, 'BNBUSDT': 580, 'HOLOUSDT': 0.002 };
-  
-  function switchPair(sym) { currentPair = sym; renderOrderBook(pairPrices[sym] || 70000); }
-  
   // Live updates - keep selected pair
   setInterval(() => {
     renderOrderBook(pairPrices[currentPair] + (Math.random() - 0.5) * 100);
@@ -1073,6 +1067,18 @@ connectWebSocket();
 // REFRESH BUTTONS
 document.getElementById('fundingRefresh').addEventListener('click', renderFunding);
 document.getElementById('tradesRefresh').addEventListener('click', renderTrades);
+
+let currentPair = "BTCUSDT";
+const pairPrices = { "BTCUSDT": 70472, "ETHUSDT": 2070, "SOLUSDT": 87, "BNBUSDT": 580, "HOLOUSDT": 0.002 };
+
+// Global variables for pair switching
+let currentPair = "BTCUSDT";
+const pairPrices = { "BTCUSDT": 70472, "ETHUSDT": 2070, "SOLUSDT": 87, "BNBUSDT": 580, "HOLOUSDT": 0.002 };
+
+function switchPair(sym) { 
+  currentPair = sym; 
+  renderOrderBook(pairPrices[sym] || 70000); 
+}
 
 console.log('✅ Aster Pilot v2 Dashboard loaded');
 </script>

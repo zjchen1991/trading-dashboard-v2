@@ -935,7 +935,7 @@ function renderOrderBook(basePrice = 104287.50) {
   document.getElementById('spreadPrice').textContent = spread.toFixed(2);
   document.getElementById('spreadPct').textContent = `Spread: ${spreadPct}%`;
 }
-renderOrderBook(); selectPair('BTCUSDT');
+renderOrderBook();'BTCUSDT');
 
 // FUNDING
 const fundingData = [
@@ -1074,9 +1074,11 @@ function connectWebSocket() {
   }, 3000);
 }
 
-connectWebSocket();
-
-// LIVE PRICE UPDATES
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  selectPair('BTCUSDT');
+  console.log('Dashboard initialized with BTCUSDT');
+});
 // LIVE PRICE UPDATES
 let selectedPair = 'BTCUSDT';
 

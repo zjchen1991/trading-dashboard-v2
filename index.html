@@ -693,30 +693,13 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" onchange="selectPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
           </select>
           <button class="panel-action" id="wsToggle">WS: OFF</button>
         </div>
-        
-        <!-- Pair Details (appears on click) -->
-        <div id="pairDetails" style="padding:0.75rem;background:var(--bg-surface);border-bottom:1px solid var(--border);">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <span id="detailSymbol" style="font-size:1.1rem;font-weight:700;">BTCUSDT</span>
-              <span id="detailPrice" style="font-size:1.4rem;font-weight:700;color:var(--accent);margin-left:0.8rem;">$0</span>
-            </div>
-            <span id="detailChange" style="color:var(--green);font-weight:600;">0%</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--text-muted);text-align:center;">
-            <div><span style="color:var(--text-secondary);">24h High</span><br><span id="detailHigh">$0</span></div>
-            <div><span style="color:var(--text-secondary);">24h Low</span><br><span id="detailLow">$0</span></div>
-            <div><span style="color:var(--text-secondary);">24h Vol</span><br><span id="detailVol">0</span></div>
-          </div>
-        </div>
-        
         <div class="ob-header-row"><span>Price</span><span>Size</span><span>Total</span></div>
         <div id="askBook"></div>
         <div class="ob-spread">
@@ -779,9 +762,9 @@ let lastLatency = 0;
 
 // Demo data
 const demoTickers = [
-  { sym: 'BTC', price: 70472.0, change: +1.82, spark: [40,45,38,52,48,55,60,58,62,65,68,72,70,75,78,82,80,85,88,92] },
-  { sym: 'ETH', price: 2070.10, change: +3.14, spark: [30,35,32,40,38,45,42,48,52,55,50,58,62,60,65,68,70,72,75,78] },
-  { sym: 'SOL', price: 87.13, change: -0.67, spark: [20,22,25,28,30,32,35,33,30,28,25,22,20,18,15,12,10,8,5,3] },
+  { sym: 'BTC', price: 104287.50, change: +1.82, spark: [40,45,38,52,48,55,60,58,62,65,68,72,70,75,78,82,80,85,88,92] },
+  { sym: 'ETH', price: 2487.30, change: +3.14, spark: [30,35,32,40,38,45,42,48,52,55,50,58,62,60,65,68,70,72,75,78] },
+  { sym: 'SOL', price: 172.85, change: -0.67, spark: [20,22,25,28,30,32,35,33,30,28,25,22,20,18,15,12,10,8,5,3] },
   { sym: 'ASTER', price: 0.0842, change: +12.35, spark: [5,8,12,15,18,22,25,28,32,35,40,45,50,55,60,65,70,75,80,85] },
   { sym: 'BNB', price: 648.20, change: +0.94, spark: [15,18,20,22,25,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62] },
   { sym: 'HOLO', price: 0.00234, change: -2.18, spark: [10,12,15,18,20,22,25,28,30,32,35,38,40,42,40,38,35,32,30,28] },
@@ -790,7 +773,7 @@ const demoTickers = [
 ];
 
 const demoPositions = [
-  { sym: 'BTCUSDT', side: 'LONG', lev: '5x', size: '0.025', entry: '103,420.00', mark: '70,472.0', pnl: '+$216.88', pnlPct: '+2.10%' },
+  { sym: 'BTCUSDT', side: 'LONG', lev: '5x', size: '0.025', entry: '103,420.00', mark: '104,287.50', pnl: '+$216.88', pnlPct: '+2.10%' },
   { sym: 'ETHUSDT', side: 'SHORT', lev: '3x', size: '1.200', entry: '2,530.80', mark: '2,487.30', pnl: '+$125.16', pnlPct: '+4.15%' },
 ];
 
@@ -846,7 +829,7 @@ function renderTickers() {
     const max = Math.max(...t.spark);
     const min = Math.min(...t.spark);
     const pts = t.spark.map((v, i) => `${(i/19)*60},${20-((v-min)/(max-min))*18}`).join(' ');
-    return `<div class="ticker-item" onclick="selectPair('${t.sym}USDT')" style="cursor:pointer;">
+    return `<div class="ticker-item">
       <span class="ticker-sym">${t.sym}</span>
       <span class="ticker-price">${priceStr}</span>
       <span class="ticker-change ${cls}">${sign}${t.change}%</span>
@@ -935,7 +918,7 @@ function renderOrderBook(basePrice = 104287.50) {
   document.getElementById('spreadPrice').textContent = spread.toFixed(2);
   document.getElementById('spreadPct').textContent = `Spread: ${spreadPct}%`;
 }
-renderOrderBook();'BTCUSDT');
+renderOrderBook();
 
 // FUNDING
 const fundingData = [
@@ -1065,131 +1048,20 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Simulate live updates - use selected pair
+  // Simulate live updates
   setInterval(() => {
-    if (selectedPair) {
-      updateOrderBookForPair(selectedPair);
-    }
+    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
     renderTrades();
   }, 3000);
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-  selectPair('BTCUSDT');
-  console.log('Dashboard initialized with BTCUSDT');
-});
-// LIVE PRICE UPDATES
-let selectedPair = 'BTCUSDT';
-
-function selectPair(sym) {
-  selectedPair = sym;
-  document.getElementById('obPairSelect').value = sym;
-  updateOrderBookForPair(sym);
-  
-  // Update details panel
-  fetch('https://fapi.asterdex.com/fapi/v1/ticker/24hr?symbol=' + sym)
-    .then(r => r.json())
-    .then(d => {
-      if (d.lastPrice) {
-        const change = parseFloat(d.priceChangePercent) || 0;
-        document.getElementById('detailSymbol').textContent = sym;
-        document.getElementById('detailPrice').textContent = '$' + parseFloat(d.lastPrice).toLocaleString();
-        document.getElementById('detailChange').textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        document.getElementById('detailChange').style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
-        document.getElementById('detailHigh').textContent = '$' + parseFloat(d.highPrice).toLocaleString();
-        document.getElementById('detailLow').textContent = '$' + parseFloat(d.lowPrice).toLocaleString();
-        document.getElementById('detailVol').textContent = (parseFloat(d.volume) / 1000000).toFixed(1) + 'M';
-      }
-    })
-    .catch(e => console.log('Details error:', e));
-}
-
-async function updateOrderBookForPair(sym) {
-  try {
-    // Get price
-    const priceRes = await fetch('https://fapi.asterdex.com/fapi/v1/ticker/price?symbol=' + sym);
-    const priceData = await priceRes.json();
-    const basePrice = parseFloat(priceData.price) || 50000;
-    
-    // Update spread
-    document.getElementById('spreadPrice').textContent = basePrice.toLocaleString();
-    
-    // Generate order book with real price
-    const askBook = document.getElementById('askBook');
-    const bidBook = document.getElementById('bidBook');
-    
-    let asks = [], bids = [];
-    let askTotal = 0, bidTotal = 0;
-    const step = sym.includes('BTC') ? 12.5 : sym.includes('ETH') ? 2.5 : 0.5;
-    
-    for (let i = 7; i >= 0; i--) {
-      const p = basePrice + (i + 1) * step;
-      const s = (Math.random() * 2 + 0.1).toFixed(3);
-      askTotal += parseFloat(s);
-      asks.push({ price: p, size: s, total: askTotal.toFixed(3), pct: askTotal });
-    }
-    
-    for (let i = 0; i < 8; i++) {
-      const p = basePrice - (i + 1) * step;
-      const s = (Math.random() * 2 + 0.1).toFixed(3);
-      bidTotal += parseFloat(s);
-      bids.push({ price: p, size: s, total: bidTotal.toFixed(3), pct: bidTotal });
-    }
-    
-    const maxAsk = asks[asks.length-1].pct;
-    const maxBid = bids[bids.length-1].pct;
-    
-    askBook.innerHTML = asks.map(a => `
-      <div class="ob-row ob-ask">
-        <span class="ob-price">${Number(a.price).toLocaleString()}</span>
-        <span class="ob-size">${a.size}</span>
-        <span class="ob-total">${a.total}</span>
-        <div class="ob-bar" style="width:${(a.pct/maxAsk*60)}%"></div>
-      </div>`).join('');
-    
-    bidBook.innerHTML = bids.map(b => `
-      <div class="ob-row ob-bid">
-        <span class="ob-price">${Number(b.price).toLocaleString()}</span>
-        <span class="ob-size">${b.size}</span>
-        <span class="ob-total">${b.total}</span>
-        <div class="ob-bar" style="width:${(b.pct/maxBid*60)}%"></div>
-      </div>`).join('');
-    
-  } catch(e) { console.log('Orderbook error:', e); }
-}
-
-document.getElementById('obPairSelect').addEventListener('change', function() {
-  selectPair(this.value);
-});
-
-async function updateLivePrices() {
-  try {
-    const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
-    for (const sym of symbols) {
-      const res = await fetch('https://fapi.asterdex.com/fapi/v1/ticker/price?symbol=' + sym);
-      const data = await res.json();
-      if (data.price) {
-        // Update ticker tape prices
-        const tickerItems = document.querySelectorAll('.ticker-item');
-        const symName = sym.replace('USDT', '');
-        tickerItems.forEach(item => {
-          if (item.querySelector('.ticker-sym').textContent === symName) {
-            item.querySelector('.ticker-price').textContent = parseFloat(data.price).toLocaleString();
-          }
-        });
-      }
-    }
-  } catch(e) { console.log('Price update error:', e); }
-}
-setInterval(updateLivePrices, 5000);
-updateLivePrices(); // Initial fetch
+connectWebSocket();
 
 // REFRESH BUTTONS
 document.getElementById('fundingRefresh').addEventListener('click', renderFunding);
 document.getElementById('tradesRefresh').addEventListener('click', renderTrades);
 
-console.log('✅ Aster Pilot v2 Dashboard loaded with live prices');
+console.log('✅ Aster Pilot v2 Dashboard loaded');
 </script>
 
 </body>

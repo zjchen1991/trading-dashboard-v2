@@ -848,21 +848,6 @@ function showPairDetails(el) {
   alert(sym + ' - ' + price);
 }
 
-// Switch pair from dropdown - updates order book with demo prices
-function switchPair(sym) {
-  const prices = {
-    'BTCUSDT': 70472,
-    'ETHUSDT': 2070,
-    'SOLUSDT': 87,
-    'BNBUSDT': 580,
-    'HOLOUSDT': 0.002
-  };
-  
-  if (prices[sym]) {
-    renderOrderBook(prices[sym]);
-  }
-}
-
 // ═══════════════════════════════════════════
 // POSITIONS
 // ═══════════════════════════════════════════
@@ -1070,9 +1055,15 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Simulate live updates
+  // Track selected pair
+  let currentPair = 'BTCUSDT';
+  const pairPrices = { 'BTCUSDT': 70472, 'ETHUSDT': 2070, 'SOLUSDT': 87, 'BNBUSDT': 580, 'HOLOUSDT': 0.002 };
+  
+  function switchPair(sym) { currentPair = sym; renderOrderBook(pairPrices[sym] || 70000); }
+  
+  // Live updates - keep selected pair
   setInterval(() => {
-    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
+    renderOrderBook(pairPrices[currentPair] + (Math.random() - 0.5) * 100);
     renderTrades();
   }, 3000);
 }

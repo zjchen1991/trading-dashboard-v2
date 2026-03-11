@@ -1048,9 +1048,11 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Simulate live updates
+  // Simulate live updates - use selected pair
   setInterval(() => {
-    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
+    if (selectedPair) {
+      updateOrderBookForPair(selectedPair);
+    }
     renderTrades();
   }, 3000);
 }

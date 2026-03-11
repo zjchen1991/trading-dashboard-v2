@@ -829,7 +829,7 @@ function renderTickers() {
     const max = Math.max(...t.spark);
     const min = Math.min(...t.spark);
     const pts = t.spark.map((v, i) => `${(i/19)*60},${20-((v-min)/(max-min))*18}`).join(' ');
-    return `<div class="ticker-item">
+    return `<div class="ticker-item" onclick="showPairDetails(this)">
       <span class="ticker-sym">${t.sym}</span>
       <span class="ticker-price">${priceStr}</span>
       <span class="ticker-change ${cls}">${sign}${t.change}%</span>
@@ -840,6 +840,13 @@ function renderTickers() {
   }).join('');
 }
 renderTickers();
+
+// Simple click handler - just show alert with pair name (for demo)
+function showPairDetails(el) {
+  const sym = el.querySelector('.ticker-sym').textContent;
+  const price = el.querySelector('.ticker-price').textContent;
+  alert(sym + ' - ' + price);
+}
 
 // ═══════════════════════════════════════════
 // POSITIONS

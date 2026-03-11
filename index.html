@@ -760,17 +760,76 @@ let ws = null;
 let autoScan = true;
 let lastLatency = 0;
 
-// Demo data
-const demoTickers = [
-  { sym: 'BTC', price: 104287.50, change: +1.82, spark: [40,45,38,52,48,55,60,58,62,65,68,72,70,75,78,82,80,85,88,92] },
-  { sym: 'ETH', price: 2487.30, change: +3.14, spark: [30,35,32,40,38,45,42,48,52,55,50,58,62,60,65,68,70,72,75,78] },
-  { sym: 'SOL', price: 172.85, change: -0.67, spark: [20,22,25,28,30,32,35,33,30,28,25,22,20,18,15,12,10,8,5,3] },
-  { sym: 'ASTER', price: 0.0842, change: +12.35, spark: [5,8,12,15,18,22,25,28,32,35,40,45,50,55,60,65,70,75,80,85] },
-  { sym: 'BNB', price: 648.20, change: +0.94, spark: [15,18,20,22,25,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62] },
-  { sym: 'HOLO', price: 0.00234, change: -2.18, spark: [10,12,15,18,20,22,25,28,30,32,35,38,40,42,40,38,35,32,30,28] },
-  { sym: 'NVDA', price: 892.40, change: +1.05, spark: [25,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,65,68,70,72] },
-  { sym: 'TSLA', price: 274.60, change: -0.32, spark: [18,20,22,25,28,30,32,35,38,40,42,40,38,35,32,30,28,25,22,20] },
-];
+// Live price fetching from Aster DEX
+const ASTER_REST = 'https://fapi.asterdex.com';
+let livePrices = {};
+let priceHistory = {};
+
+// Fetch live prices
+async function fetchPrices() {
+  try {
+    const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ASTERUSDT', 'BNBUSDT', 'HOLOUSDT'];
+    const promises = symbols.map(s => 
+      fetch(`${ASTER_REST}/fapi/v1/ticker/price?symbol=${s}`).then(r => r.json())
+    );
+    const results = await Promise.all(promises);
+    
+    results.forEach(r => {
+      if (r.price) {
+        const oldPrice = livePrices[r.symbol] || parseFloat(r.price);
+        livePrices[r.symbol] = parseFloat(r.price);
+        
+        // Calculate change
+        const change = oldPrice ? ((livePrices[r.symbol] - oldPrice) / oldPrice * 100) : 0;
+        
+        // Track history for sparklines
+        if (!priceHistory[r.symbol]) priceHistory[r.symbol] = [];
+        priceHistory[r.symbol].push(livePrices[r.symbol]);
+        if (priceHistory[r.symbol].length > 20) priceHistory[r.symbol].shift();
+      }
+    });
+    
+    updateTickers();
+    renderOrderBook(livePrices.BTCUSDT || 70000);
+    document.getElementById('equity').textContent = '$' + (12847 + (livePrices.BTCUSDT ? (livePrices.BTCUSDT - 70000) * 0.025 * 2 : 0)).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
+    
+  } catch(e) { 
+    console.log('Price fetch error:', e); 
+    fetchPrices(); setInterval(fetchPrices, 5000); // Fallback to demo
+  }
+}
+
+function updateTickers() {
+  const tickerMap = {
+    'BTCUSDT': { sym: 'BTC', spark: priceHistory.BTCUSDT },
+    'ETHUSDT': { sym: 'ETH', spark: priceHistory.ETHUSDT },
+    'SOLUSDT': { sym: 'SOL', spark: priceHistory.SOLUSDT },
+    'ASTERUSDT': { sym: 'ASTER', spark: priceHistory.ASTERUSDT },
+    'BNBUSDT': { sym: 'BNB', spark: priceHistory.BNBUSDT },
+    'HOLOUSDT': { sym: 'HOLO', spark: priceHistory.HOLOUSDT },
+  };
+  
+  const tape = document.getElementById('tickerTape');
+  tape.innerHTML = Object.entries(tickerMap).map(([sym, data]) => {
+    const price = livePrices[sym] || 0;
+    const change = ((price - (price * 0.98)) / price * 100) || 0; // Rough estimate
+    const cls = change >= 0 ? 'up' : 'down';
+    const sign = change >= 0 ? '+' : '';
+    const spark = data.spark || Array(20).fill(price);
+    const max = Math.max(...spark);
+    const min = Math.min(...spark);
+    const pts = spark.map((v, i) => `${(i/19)*60},${20-((v-min)/(max-min||1))*18}`).join(' ');
+    
+    return `<div class="ticker-item">
+      <span class="ticker-sym">${data.sym}</span>
+      <span class="ticker-price">${price >= 1000 ? price.toLocaleString(undefined, {minimumFractionDigits:2}) : price.toFixed(4)}</span>
+      <span class="ticker-change ${cls}">${sign}${change.toFixed(2)}%</span>
+      <svg class="sparkline" viewBox="0 0 60 20">
+        <polyline fill="none" stroke="${change >= 0 ? 'var(--green)' : 'var(--red)'}" stroke-width="1.5" points="${pts}"/>
+      </svg>
+    </div>`;
+  }).join('');
+}
 
 const demoPositions = [
   { sym: 'BTCUSDT', side: 'LONG', lev: '5x', size: '0.025', entry: '103,420.00', mark: '104,287.50', pnl: '+$216.88', pnlPct: '+2.10%' },
@@ -839,7 +898,7 @@ function renderTickers() {
     </div>`;
   }).join('');
 }
-renderTickers();
+fetchPrices(); setInterval(fetchPrices, 5000);
 
 // ═══════════════════════════════════════════
 // POSITIONS

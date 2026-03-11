@@ -799,6 +799,16 @@ async function fetchPrices() {
   }
 }
 
+// Fallback demo data if API fails
+const demoTickers = [
+  { sym: 'BTC', price: 70000, spark: Array(20).fill(70000) },
+  { sym: 'ETH', price: 2500, spark: Array(20).fill(2500) },
+  { sym: 'SOL', price: 170, spark: Array(20).fill(170) },
+  { sym: 'ASTER', price: 0.08, spark: Array(20).fill(0.08) },
+  { sym: 'BNB', price: 650, spark: Array(20).fill(650) },
+  { sym: 'HOLO', price: 0.002, spark: Array(20).fill(0.002) },
+];
+
 function updateTickers() {
   const tickerMap = {
     'BTCUSDT': { sym: 'BTC', spark: priceHistory.BTCUSDT },
@@ -1005,7 +1015,7 @@ renderFunding();
 // RECENT TRADES
 function renderTrades() {
   const list = document.getElementById('tradesList');
-  const base = demoTickers[0].price;
+  const base = livePrices.BTCUSDT || 70000;
   let html = '';
   for (let i = 0; i < 20; i++) {
     const isBuy = Math.random() > 0.48;
@@ -1109,7 +1119,7 @@ function connectWebSocket() {
   
   // Simulate live updates
   setInterval(() => {
-    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
+    renderOrderBook(livePrices.BTCUSDT + (Math.random() - 0.5) * 100);
     renderTrades();
   }, 3000);
 }

@@ -1048,12 +1048,7 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Simulate live updates
-  setInterval(() => {
-    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
-    renderTrades();
-  }, 3000);
-}
+  // NO CONFLICTING TIMERS - using fetchLivePrice instead
 
 connectWebSocket();
 

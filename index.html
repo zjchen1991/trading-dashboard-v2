@@ -693,7 +693,7 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" onchange="switchPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
@@ -1048,14 +1048,37 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // Simulate live updates
+  // Live updates - use selected pair only
+  let currentPair = 'BTCUSDT';
   setInterval(() => {
-    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
+    // Fetch live price for current pair
+    fetch('https://fapi.asterdex.com/fapi/v1/ticker/price?symbol=' + currentPair)
+      .then(r => r.json())
+      .then(data => {
+        if (data.price) {
+          renderOrderBook(parseFloat(data.price));
+        }
+      })
+      .catch(() => {});
     renderTrades();
   }, 3000);
+  
+  // Function to switch pairs
+  window.switchPair = function(sym) {
+    currentPair = sym;
+    document.getElementById('obPairSelect').value = sym;
+  };
 }
 
 connectWebSocket();
+
+// Add options to dropdown
+document.getElementById('obPairSelect').innerHTML = `
+  <option value="BTCUSDT">BTCUSDT</option>
+  <option value="ETHUSDT">ETHUSDT</option>
+  <option value="SOLUSDT">SOLUSDT</option>
+  <option value="BNBUSDT">BNBUSDT</option>
+`;
 
 // REFRESH BUTTONS
 document.getElementById('fundingRefresh').addEventListener('click', renderFunding);

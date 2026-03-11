@@ -693,7 +693,7 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" onchange="switchPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
@@ -1048,7 +1048,12 @@ function connectWebSocket() {
     document.getElementById('latency').textContent = `${lastLatency}ms`;
   }, 2000);
   
-  // NO CONFLICTING TIMERS - using fetchLivePrice instead
+  // Simulate live updates
+  setInterval(() => {
+    renderOrderBook(demoTickers[0].price + (Math.random() - 0.5) * 100);
+    renderTrades();
+  }, 3000);
+}
 
 connectWebSocket();
 
@@ -1057,34 +1062,6 @@ document.getElementById('fundingRefresh').addEventListener('click', renderFundin
 document.getElementById('tradesRefresh').addEventListener('click', renderTrades);
 
 console.log('✅ Aster Pilot v2 Dashboard loaded');
-
-// LIVE PRICES FOR PAIR SELECTOR
-let selectedPair = 'BTCUSDT';
-
-function switchPair(sym) {
-  selectedPair = sym;
-  fetchLivePrice(sym);
-}
-
-async function fetchLivePrice(sym) {
-  try {
-    const res = await fetch('https://fapi.asterdex.com/fapi/v1/ticker/price?symbol=' + sym);
-    const data = await res.json();
-    if (data.price) {
-      renderOrderBook(parseFloat(data.price));
-    }
-  } catch(e) {
-    console.log('Price fetch error:', e);
-  }
-}
-
-// Update price every 3 seconds for selected pair
-setInterval(() => {
-  fetchLivePrice(selectedPair);
-}, 3000);
-
-// Initial fetch
-fetchLivePrice('BTCUSDT');
 </script>
 
 </body>

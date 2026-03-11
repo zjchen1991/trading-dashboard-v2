@@ -693,7 +693,7 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" onchange="switchPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
@@ -846,6 +846,21 @@ function showPairDetails(el) {
   const sym = el.querySelector('.ticker-sym').textContent;
   const price = el.querySelector('.ticker-price').textContent;
   alert(sym + ' - ' + price);
+}
+
+// Switch pair from dropdown - updates order book with demo prices
+function switchPair(sym) {
+  const prices = {
+    'BTCUSDT': 70472,
+    'ETHUSDT': 2070,
+    'SOLUSDT': 87,
+    'BNBUSDT': 580,
+    'HOLOUSDT': 0.002
+  };
+  
+  if (prices[sym]) {
+    renderOrderBook(prices[sym]);
+  }
 }
 
 // ═══════════════════════════════════════════

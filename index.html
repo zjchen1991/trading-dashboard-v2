@@ -693,7 +693,7 @@
       <!-- Order Book -->
       <div class="panel">
         <div class="panel-header">
-          <select id="obPairSelect" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
+          <select id="obPairSelect" onchange="selectPair(this.value)" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:2px 6px;border-radius:4px;font-family:var(--font-mono);font-size:0.75rem;">
             <option value="BTCUSDT">BTCUSDT</option>
             <option value="ETHUSDT">ETHUSDT</option>
             <option value="SOLUSDT">SOLUSDT</option>
@@ -829,7 +829,7 @@ function renderTickers() {
     const max = Math.max(...t.spark);
     const min = Math.min(...t.spark);
     const pts = t.spark.map((v, i) => `${(i/19)*60},${20-((v-min)/(max-min))*18}`).join(' ');
-    return `<div class="ticker-item">
+    return `<div class="ticker-item" onclick="selectPair('${t.sym}USDT')" style="cursor:pointer;">
       <span class="ticker-sym">${t.sym}</span>
       <span class="ticker-price">${priceStr}</span>
       <span class="ticker-change ${cls}">${sign}${t.change}%</span>
@@ -1058,6 +1058,74 @@ function connectWebSocket() {
 connectWebSocket();
 
 // LIVE PRICE UPDATES
+// LIVE PRICE UPDATES
+let selectedPair = 'BTCUSDT';
+
+function selectPair(sym) {
+  selectedPair = sym;
+  document.getElementById('obPairSelect').value = sym;
+  updateOrderBookForPair(sym);
+  document.getElementById('selectedPairDisplay').textContent = sym;
+}
+
+async function updateOrderBookForPair(sym) {
+  try {
+    // Get price
+    const priceRes = await fetch('https://fapi.asterdex.com/fapi/v1/ticker/price?symbol=' + sym);
+    const priceData = await priceRes.json();
+    const basePrice = parseFloat(priceData.price) || 50000;
+    
+    // Update spread
+    document.getElementById('spreadPrice').textContent = basePrice.toLocaleString();
+    
+    // Generate order book with real price
+    const askBook = document.getElementById('askBook');
+    const bidBook = document.getElementById('bidBook');
+    
+    let asks = [], bids = [];
+    let askTotal = 0, bidTotal = 0;
+    const step = sym.includes('BTC') ? 12.5 : sym.includes('ETH') ? 2.5 : 0.5;
+    
+    for (let i = 7; i >= 0; i--) {
+      const p = basePrice + (i + 1) * step;
+      const s = (Math.random() * 2 + 0.1).toFixed(3);
+      askTotal += parseFloat(s);
+      asks.push({ price: p, size: s, total: askTotal.toFixed(3), pct: askTotal });
+    }
+    
+    for (let i = 0; i < 8; i++) {
+      const p = basePrice - (i + 1) * step;
+      const s = (Math.random() * 2 + 0.1).toFixed(3);
+      bidTotal += parseFloat(s);
+      bids.push({ price: p, size: s, total: bidTotal.toFixed(3), pct: bidTotal });
+    }
+    
+    const maxAsk = asks[asks.length-1].pct;
+    const maxBid = bids[bids.length-1].pct;
+    
+    askBook.innerHTML = asks.map(a => `
+      <div class="ob-row ob-ask">
+        <span class="ob-price">${Number(a.price).toLocaleString()}</span>
+        <span class="ob-size">${a.size}</span>
+        <span class="ob-total">${a.total}</span>
+        <div class="ob-bar" style="width:${(a.pct/maxAsk*60)}%"></div>
+      </div>`).join('');
+    
+    bidBook.innerHTML = bids.map(b => `
+      <div class="ob-row ob-bid">
+        <span class="ob-price">${Number(b.price).toLocaleString()}</span>
+        <span class="ob-size">${b.size}</span>
+        <span class="ob-total">${b.total}</span>
+        <div class="ob-bar" style="width:${(b.pct/maxBid*60)}%"></div>
+      </div>`).join('');
+    
+  } catch(e) { console.log('Orderbook error:', e); }
+}
+
+document.getElementById('obPairSelect').addEventListener('change', function() {
+  selectPair(this.value);
+});
+
 async function updateLivePrices() {
   try {
     const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
